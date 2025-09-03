@@ -31,6 +31,7 @@ jobs:
           DEV_DATASOURCE_PASSWORD=${{ secrets.DEV_DATASOURCE_PASSWORD }}
           NAME_GENERATOR_API_KEY=${{ secrets.NAME_GENERATOR_API_KEY }}
           TOKEN_SECRET_KEY=${{ secrets.TOKEN_SECRET_KEY }}
+          ACTIVE_PROFILE=dev
           EOF
 
       - name: Stop existing services
