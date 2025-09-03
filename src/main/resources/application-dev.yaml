@@ -2,9 +2,9 @@ spring:
   application:
     name: lv2-final-mission
   datasource:
-    url: ${PROD_DATASOURCE_URL}
-    username: ${PROD_DATASOURCE_USERNAME}
-    password: ${PROD_DATASOURCE_PASSWORD}
+    url: ${DEV_DATASOURCE_URL}
+    username: ${DEV_DATASOURCE_USERNAME}
+    password: ${DEV_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     show-sql: true
