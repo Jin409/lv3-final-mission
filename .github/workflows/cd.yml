@@ -23,19 +23,28 @@ jobs:
       - name: Build project
         run: ./gradlew clean build -x test
 
-      - name: Update .env file
+      - name: Append environment variables
         run: |
-          cat > /home/ubuntu/lv3-final-mission/.env <<EOF
-          DEV_DATASOURCE_URL=${{ secrets.DEV_DATASOURCE_URL }}
-          DEV_DATASOURCE_USERNAME=${{ secrets.DEV_DATASOURCE_USERNAME }}
-          DEV_DATASOURCE_PASSWORD=${{ secrets.DEV_DATASOURCE_PASSWORD }}
-          NAME_GENERATOR_API_KEY=${{ secrets.NAME_GENERATOR_API_KEY }}
-          TOKEN_SECRET_KEY=${{ secrets.TOKEN_SECRET_KEY }}
-          ACTIVE_PROFILE=dev
+          sudo tee -a /etc/environment >/dev/null <<EOF
+            DEV_DATASOURCE_URL=${{ secrets.DEV_DATASOURCE_URL }}
+            DEV_DATASOURCE_USERNAME=${{ secrets.DEV_DATASOURCE_USERNAME }}
+            DEV_DATASOURCE_PASSWORD=${{ secrets.DEV_DATASOURCE_PASSWORD }}
+            NAME_GENERATOR_API_KEY=${{ secrets.NAME_GENERATOR_API_KEY }}
+            TOKEN_SECRET_KEY=${{ secrets.TOKEN_SECRET_KEY }}
+            ACTIVE_PROFILE=dev
           EOF
 
-      - name: Restart service
+      - name: Stop process on port 80 if any
         run: |
-          sudo systemctl daemon-reload
-          sudo systemctl restart lv3
-          sudo systemctl status lv3 --no-pager
+          pid=$(sudo lsof -nP -iTCP:80 -sTCP:LISTEN -t || true)
+          if [ -n "$pid" ]; then
+            sudo kill -15 $pid || true
+            sleep 2
+            sudo kill -9 $pid  || true
+          fi
+
+      - name: Start app with nohup on :80
+        working-directory: /home/ubuntu/lv3-final-mission
+        run: |
+          sudo env $(grep -v '^#' /etc/environment | xargs) \
+            nohup java -jar build/libs/lv2-final-mission-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
