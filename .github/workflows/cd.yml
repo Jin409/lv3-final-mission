@@ -25,7 +25,7 @@ jobs:
 
       - name: Create .env file
         run: |
-          cat <<EOF > ~/lv3-final-mission/.env
+          cat <<EOF > /home/ubuntu/lv3-final-mission/.env
           DEV_DATASOURCE_URL=${{ secrets.DEV_DATASOURCE_URL }}
           DEV_DATASOURCE_USERNAME=${{ secrets.DEV_DATASOURCE_USERNAME }}
           DEV_DATASOURCE_PASSWORD=${{ secrets.DEV_DATASOURCE_PASSWORD }}
@@ -34,20 +34,8 @@ jobs:
           ACTIVE_PROFILE=dev
           EOF
 
-      - name: Stop existing services
+      - name: Restart backend service
         run: |
-          # 80번 포트를 점유 중인 PID 확인
-          pid=$(lsof -ti:80 || true)
-
-          if [ -n "$pid" ]; then
-            echo "Process using port 80 found: $pid"
-            # 강제 종료 (필요시 kill -15로 먼저 시도 후 실패 시 -9)
-            kill -9 $pid
-            echo "Stopped process $pid"
-          else
-            echo "No process is using port 80"
-          fi
-
-      - name: Start new services
-        run: sudo nohup java -jar lv2-final-mission-0.0.1-SNAPSHOT.jar
-        working-directory: /home/ubuntu/lv3-final-mission/build/libs
+          sudo systemctl daemon-reload
+          sudo systemctl restart lv3
+          sudo systemctl status lv3 --no-pager
