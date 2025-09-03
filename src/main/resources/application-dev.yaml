@@ -20,10 +20,10 @@ spring:
 
 name-generator:
   api:
-    key: ${name-generator-api-key}
+    key: ${NAME_GENERATOR_API_KEY}
 
 security:
   jwt:
     token:
-      secret-key: ${token-secret-key}
+      secret-key: ${TOKEN_SECRET_KEY}
       expire-length: 360000
