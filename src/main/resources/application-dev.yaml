@@ -1,3 +1,6 @@
+server:
+  port: 80
+
 spring:
   application:
     name: lv2-final-mission
