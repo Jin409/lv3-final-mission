@@ -7,9 +7,13 @@ on:
 jobs:
   build:
     runs-on: [ self-hosted, linux, ARM64 ]
+    env:
+      DEPLOY_DIR: /home/ubuntu/lv3-final-mission
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -23,16 +27,24 @@ jobs:
       - name: Build project
         run: ./gradlew clean build -x test
 
-      - name: Append environment variables
+      - name: Append environment variables to /etc/environment
         run: |
           sudo tee -a /etc/environment >/dev/null <<EOF
-            DEV_DATASOURCE_URL=${{ secrets.DEV_DATASOURCE_URL }}
-            DEV_DATASOURCE_USERNAME=${{ secrets.DEV_DATASOURCE_USERNAME }}
-            DEV_DATASOURCE_PASSWORD=${{ secrets.DEV_DATASOURCE_PASSWORD }}
-            NAME_GENERATOR_API_KEY=${{ secrets.NAME_GENERATOR_API_KEY }}
-            TOKEN_SECRET_KEY=${{ secrets.TOKEN_SECRET_KEY }}
-            ACTIVE_PROFILE=dev
+          DEV_DATASOURCE_URL=${{ secrets.DEV_DATASOURCE_URL }}
+          DEV_DATASOURCE_USERNAME=${{ secrets.DEV_DATASOURCE_USERNAME }}
+          DEV_DATASOURCE_PASSWORD=${{ secrets.DEV_DATASOURCE_PASSWORD }}
+          NAME_GENERATOR_API_KEY=${{ secrets.NAME_GENERATOR_API_KEY }}
+          TOKEN_SECRET_KEY=${{ secrets.TOKEN_SECRET_KEY }}
+          ACTIVE_PROFILE=dev
           EOF
+
+      - name: Stage artifact to deploy dir
+        run: |
+          sudo mkdir -p "$DEPLOY_DIR/build/libs"
+          JAR_PATH=$(ls -t build/libs/*.jar | head -n1)
+          sudo cp -f "$JAR_PATH" "$DEPLOY_DIR/build/libs/"
+          JAR_BASENAME=$(basename "$JAR_PATH")
+          sudo ln -sfn "$DEPLOY_DIR/build/libs/$JAR_BASENAME" "$DEPLOY_DIR/current.jar"
 
       - name: Stop process on port 80 if any
         run: |
@@ -47,4 +59,4 @@ jobs:
         working-directory: /home/ubuntu/lv3-final-mission
         run: |
           sudo env $(grep -v '^#' /etc/environment | xargs) \
-            nohup java -jar build/libs/lv2-final-mission-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+            nohup java -jar ./current.jar --server.port=80 > app.log 2>&1 &
