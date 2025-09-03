@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: lv2-final-mission
+  datasource:
+    url: ${PROD_DATASOURCE_URL}
+    username: ${PROD_DATASOURCE_USERNAME}
+    password: ${PROD_DATASOURCE_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    hibernate:
+      ddl-auto: update
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+
+name-generator:
+  api:
+    key: ${name-generator-api-key}
+
+security:
+  jwt:
+    token:
+      secret-key: ${token-secret-key}
+      expire-length: 360000
