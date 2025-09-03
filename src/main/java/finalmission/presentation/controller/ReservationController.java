@@ -28,6 +28,12 @@ public class ReservationController {
 
     private final ReservationService reservationService;
 
+    @Operation(summary = "테스트용 API")
+    @GetMapping("/test")
+    public String test() {
+        return "hello!";
+    }
+
     @Operation(summary = "예약 등록")
     @PostMapping
     public void registerReservation(@RequestBody ReservationRegisterDto reservationRegisterDto,
